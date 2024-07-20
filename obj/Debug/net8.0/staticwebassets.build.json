@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "uG9vuwPJQ4gjsSNp80Se89fBc8VoG96OFF9P7evUQ8g=",
+  "Source": "AspNetCoreFilterPipeline",
+  "BasePath": "_content/AspNetCoreFilterPipeline",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
