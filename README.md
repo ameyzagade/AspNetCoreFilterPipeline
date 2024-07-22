@@ -4,7 +4,7 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 
 
 #### Request response cycle
-        Outgoing request        Incoming request
+        Outgoing response        Incoming request
                 ||                      ||
                 ||              Endpoint middleware 
                 ||                      || 
@@ -35,6 +35,7 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 3. Action Filter
 - IActionFilter
 - IAsyncActionFilter
+- ActionFilterAttribute
 
 4. Exception Filter
 - IExceptionFilter
@@ -54,23 +55,40 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 - IOrderedFilter
 
 
-### Filter interface implementation usage
-- [ServiceFilter(type: typeof(T), Order = N)]
-- [TypeFilter(type: typeof(T), Order = N)]
-- Inherit Attribute class in the implementation type and use it as an attribute
-- Pass as options while registering controllers with DI container
-  service.AddControllers(o => o.Filters.Add<T>(order: N));
+### ActionFilterAttribute
+- Deriving from this attribute exposes:
+- 2 sync methods and 1 async method to hook into action filter: OnActionExecuting, OnActionExecuted, OnActionExecutionAsync
+- 2 sync methods and 1 async method to hook into result filter: OnResultExecuted, OnResultExecuting, OnResultExecutionAsync
+- Either override sync methods or async methods, but not both.
+- The implementing class can be used as an attribute.
 
 
 ### Scope of usage
-- Can be used globally by configuring options while registering AddControllers()
+- __Global__: 
+  By configuring options while registering AddControllers()
   Global filters run for all controllers and their action methods by default
-- Can be used on controller or specific action methods
+- __On Controller__:
   Filters applied at controller level run for all action methods by default
+- __On specific action methods__
+
+
+### Filter interface implementation usage
+- __Using ServiceFilter__
+  [ServiceFilter(type: typeof(T), Order = N)]
+  Type resolved from DI container, should be registered with DI container
+- __Using TypeFilter__
+  [TypeFilter(type: typeof(T), Order = N)]
+  Type resolved?
+- __Inherit Attribute class__ 
+  Inherit attribute class in the implementation type and use it as an attribute
+  Type resolved?
+- __Pass as an option registering controllers with DI container__
+  service.AddControllers(o => o.Filters.Add<T>(order: N));
+  Type resolved from DI container, should be registered with DI container
 
 
 ### Order of execution
-- The default order stays for different variety of filters unless overridden 
+- The default order stays for different variety of filters unless overridden explicitly.
 - If multiple filters are added at global level or at controller/action method level, 
-  they run in the order in which they are defined
-- Order by be overridden by explicity assigning an order value
+  they run in the order in which they are defined.
+- Order can be overridden by explicity assigning an order value.

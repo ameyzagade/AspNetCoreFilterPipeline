@@ -31,6 +31,7 @@ public class WeatherForecastController : ControllerBase
     [ServiceFilter(type: typeof(ActionMethodActionFilter))]
     [ServiceFilter(type: typeof(ActionMethodAsyncActionFilter))]
     [LoggingAsyncActionFilter("GetWeatherForecast")]
+    [SecondLoggingAsyncActionFilter("GetWeatherForecast")]
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
