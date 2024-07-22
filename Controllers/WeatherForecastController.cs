@@ -1,5 +1,7 @@
 using AspNetCoreFilterPipeline.Filters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.SignalR;
 
 namespace AspNetCoreFilterPipeline.Controllers;
 
@@ -8,6 +10,7 @@ namespace AspNetCoreFilterPipeline.Controllers;
 //however the order has been changed
 [ServiceFilter(type: typeof(ControllerActionFilter), Order = 50)]
 [ServiceFilter(type: typeof(ControllerAsyncActionFilter))]
+[TypeFilter(type: typeof(ControllerActionFilter), Order = 1)]
 [LoggingAsyncActionFilter("WeatherForecast")]       // using filter as an attribute
 [ApiController]
 [Route("[controller]")]
