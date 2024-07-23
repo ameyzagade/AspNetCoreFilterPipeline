@@ -4,3 +4,4 @@ GET {{AspNetCoreFilterPipeline_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+GET {{AspNetCoreFilterPipeline_HostAddress}}/weatherforecast/error

@@ -42,4 +42,11 @@ public class WeatherForecastController : ControllerBase
         })
         .ToArray();
     }
+
+    [TypeFilter(type: typeof(CustomExceptionFilter), Arguments = ["error"])]
+    [HttpGet("error")]
+    public Task Throws()
+    {
+        throw new NotImplementedException();
+    }
 }

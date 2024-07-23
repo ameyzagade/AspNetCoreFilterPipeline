@@ -39,8 +39,8 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 - Order can be overridden by explicity assigning an order value.
   Lower integer value, execution prioritised. 
   Higher integer value, execution deprioritised.
-- Custom action filters can implement IOrderedFilter to add order property which controls the order of execution
-  in the framework.
+- Custom action filters can implement IOrderedFilter interface to add order property which controls the order of
+  execution in the framework.
 
 
 ### Available Interfaces
@@ -100,3 +100,11 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 
 ### Resource Filter
 - Wraps most of the filter pipeline.
+
+
+### Exception Filter
+- Catch exceptions in controllers or razor page creation, action methods, model binding, action filters.
+  Does not catch exceptions in resource filter, result filter, result execution
+- Not as flexible as global error handling middleware. Use only when action method response would be different
+  e.g., view -> HTML, api -> json
+- Set exception handled property to true or write response to stop exception propagation.
