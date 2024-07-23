@@ -1,5 +1,5 @@
 ## Filter pipeline overview
-The ASP.NET Core MVC Action (or filter) pipeline runs after the end of middleware pipeline.
+The ASP.NET Core Action Invocation (or filter) pipeline runs after the end of middleware pipeline.
 It provides hooks to inspect/modify/short-circuit the filter pipeline.
 
 
@@ -21,6 +21,26 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
                 ||              Exception Filter(s) (if exception)
                 ||                      ||
                 ==============    Result Filter(s)    <==>    **Result Execution**
+
+
+### Scope of usage
+- __Global__: 
+  By configuring options while registering services.AddControllers()
+  Global filters run for all controllers and their action methods by default.
+- __On Controller__:
+  Filters applied at controller level run for all action methods by default.
+- __On specific action methods__
+
+
+### Order of execution
+- The order of execution is defined for different types of filters.
+- If multiple filters of a specific type are added at a single scope or different scopes,
+  they run in the order in which they are defined unless overidden explicitly.
+- Order can be overridden by explicity assigning an order value.
+  Lower integer value, execution prioritised. 
+  Higher integer value, execution deprioritised.
+- Custom action filters can implement IOrderedFilter to add order property which controls the order of execution
+  in the framework.
 
 
 ### Available Interfaces
@@ -55,23 +75,6 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 - IOrderedFilter
 
 
-### ActionFilterAttribute
-- Deriving from this attribute exposes:
-- 2 sync methods and 1 async method to hook into action filter: OnActionExecuting, OnActionExecuted, OnActionExecutionAsync
-- 2 sync methods and 1 async method to hook into result filter: OnResultExecuted, OnResultExecuting, OnResultExecutionAsync
-- Either override sync methods or async methods, but not both.
-- The implementing class can be used as an attribute.
-
-
-### Scope of usage
-- __Global__: 
-  By configuring options while registering AddControllers()
-  Global filters run for all controllers and their action methods by default
-- __On Controller__:
-  Filters applied at controller level run for all action methods by default
-- __On specific action methods__
-
-
 ### Filter interface implementation usage
 - __Using ServiceFilter__
   [ServiceFilter(type: typeof(T), Order = N)]
@@ -87,11 +90,13 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
   Type resolved?
 
 
-### Order of execution
-- The default order stays for different variety of filters unless overridden explicitly.
-- If multiple filters are added at global level or at controller/action method level, 
-  they run in the order in which they are defined.
-- Order can be overridden by explicity assigning an order value.
-  Lower integer value, execution prioritised. Higher integer value, execution deprioritised.
-- Custom action filters can implement IOrderedFilter to add order property which contols order of execution
-  in the framework.
+### ActionFilterAttribute
+- Deriving from this attribute exposes:
+- 2 sync methods and 1 async method to hook into action filter: OnActionExecuting, OnActionExecuted, OnActionExecutionAsync
+- 2 sync methods and 1 async method to hook into result filter: OnResultExecuted, OnResultExecuting, OnResultExecutionAsync
+- Either override sync methods or async methods, but not both.
+- The implementing class can be used as an attribute.
+
+
+### Resource Filter
+- Wraps most of the filter pipeline.

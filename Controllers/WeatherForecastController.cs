@@ -1,7 +1,5 @@
 using AspNetCoreFilterPipeline.Filters;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.SignalR;
 
 namespace AspNetCoreFilterPipeline.Controllers;
 
@@ -32,6 +30,7 @@ public class WeatherForecastController : ControllerBase
     [ServiceFilter(type: typeof(ActionMethodAsyncActionFilter))]
     [LoggingAsyncActionFilter("GetWeatherForecast")]
     [SecondLoggingAsyncActionFilter("GetWeatherForecast")]
+    [AsyncResourceFilter("GetWeatherForecast")]
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {

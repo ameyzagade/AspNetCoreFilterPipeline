@@ -11,6 +11,7 @@ builder.Services.AddControllers(options =>
     // These filters registererd globally need not be registered with DI container 
     options.Filters.Add(typeof(GlobalControllerActionFilter), order: 100);
     options.Filters.Add<GlobalControllerAsyncActionFilter>();
+    options.Filters.Add<GlobalResourceFilter>();
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
