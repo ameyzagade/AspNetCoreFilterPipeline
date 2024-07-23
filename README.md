@@ -18,7 +18,7 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
                 ||                      ||
                 ||                Action Filter(s)    <==>    **Action Method execution**
                 ||                      ||
-                ||              Exception Filter(s)
+                ||              Exception Filter(s) (if exception)
                 ||                      ||
                 ==============    Result Filter(s)    <==>    **Result Execution**
 
@@ -84,7 +84,7 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
   Type resolved?
 - __Pass as an option registering controllers with DI container__
   service.AddControllers(o => o.Filters.Add<T>(order: N));
-  Type resolved from DI container, should be registered with DI container
+  Type resolved?
 
 
 ### Order of execution
@@ -92,3 +92,6 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 - If multiple filters are added at global level or at controller/action method level, 
   they run in the order in which they are defined.
 - Order can be overridden by explicity assigning an order value.
+  Lower integer value, execution prioritised. Higher integer value, execution deprioritised.
+- Custom action filters can implement IOrderedFilter to add order property which contols order of execution
+  in the framework.
