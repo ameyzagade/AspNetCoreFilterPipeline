@@ -1,46 +1,99 @@
 ## Filter pipeline overview
-The ASP.NET Core Action Invocation (or filter) pipeline runs after the end of middleware pipeline.
-It provides hooks to inspect/modify/short-circuit the filter pipeline.
+- ASP.NET Core Action Invocation or filter pipeline
+- Runs after the end of middleware pipeline once action method is selected
+- It provides granular approach and hooks to inspect/modify/short-circuit the requests
+- It helps make action method logic be highly cohesive
 
 
-#### Request response cycle
-        Outgoing response        Incoming request
-                ||                      ||
-                ||              Endpoint middleware 
-                ||                      || 
-                ||             Authorisation Filter(s) 
-                ||                      || 
-            Resource                Resource 
-            Filter(s)               Filter(s)
-            AFTER                    BEFORE
-                ||                      |
-                ||              **Model Binding**
-                ||                      ||
-                ||                Action Filter(s)    <==>    **Action Method execution**
-                ||                      ||
-                ||              Exception Filter(s) (if exception)
-                ||                      ||
-                ==============    Result Filter(s)    <==>    **Result Execution**
+### Filter pipeline flow
+  Outgoing response        Incoming request
+          ||                      ||
+          ||              Endpoint middleware 
+          ||                      || 
+          ||             Authorisation Filter(s)
+          ||                      || 
+      Resource                Resource 
+      Filter(s)               Filter(s)
+      AFTER                    BEFORE
+          ||                      ||
+          ||               **Model Binding**
+          ||              **Model validation**
+          ||                      ||
+          ||                Action Filter(s)    <==>    **Action Method execution**
+          ||                      ||
+          ||              Exception Filter(s)
+          ||                      ||
+          ==============    Result Filter(s)    <==>    **Result Execution**
 
 
-### Scope of usage
-- __Global__: 
-  By configuring options while registering services.AddControllers()
-  Global filters run for all controllers and their action methods by default.
-- __On Controller__:
-  Filters applied at controller level run for all action methods by default.
-- __On specific action methods__
+### Use cases
+1. __Authorisation Filter(s)__:
+- Define custom auth scheme
+
+2. __Resource Filter(s)__:
+- Generic validations
+- Return cached value
+
+3. __Action Filter(s)__:
+- Data validations on the incoming data after model binding and validations
+
+4. __Exception Filter(s)__:
+- Catching exceptions in model binding and validations, action methods, action filters, controller or razor page
+  instance creation
+
+5. __Result Filter(s)__:
+- Executes result produced by action method or action filter
+
+
+### Scope
+1. __Global__: 
+  - Configure options while registering services.AddControllers() with the DI container
+  - Runs for all controllers and their action methods by default
+
+2. __On Controller__:
+  - Runs for all action methods by default
+
+3. __On specific action methods__
+  - Runs for the specific action methods where applied by default
 
 
 ### Order of execution
-- The order of execution is defined for different types of filters.
-- If multiple filters of a specific type are added at a single scope or different scopes,
-  they run in the order in which they are defined unless overidden explicitly.
-- Order can be overridden by explicity assigning an order value.
-  Lower integer value, execution prioritised. 
-  Higher integer value, execution deprioritised.
-- Custom action filters can implement IOrderedFilter interface to add order property which controls the order of
-  execution in the framework.
+1. The order of execution is defined for different types of filters
+
+2. For a given type, the order if execution is global scope -> controller scope -> action method scope
+
+3. If multiple filters of same type are defined at a scope,  
+  they run in the order defined unless overidden
+
+4. Order can be overridden by assigning an order value
+  Lower integer value -> execution prioritised
+  Higher integer value -> execution deprioritised
+
+5. Implement IOrderedFilter interface to add order property and a value to override order of execution
+
+
+### Filter interface implementation usage
+1. __ServiceFilter attribute__
+  - [ServiceFilter(type: typeof(T), Order = N)]
+  - Type resolved from DI container, should be registered with DI container
+
+2. __TypeFilter attribute__
+  - [TypeFilter(type: typeof(T), Order = N)]
+  - Can pass arguments to the type's ctor
+  - Type instantiated by Activator Utilities
+  - Type's dependencies resolved by the DI container
+
+3. __Inherit Attribute class__ 
+  - Inherit attribute class in the implementation type and use it as an attribute
+  - Type instantiated by Activator Utilities
+
+4. __Pass as an option while registering controllers with the DI container__
+  - service.AddControllers(o => o.Filters.Add<T>(order: N));
+    Type instantiated by Activator Utilities
+    Type's dependencies resolved by the DI container
+
+  - service.AddControllers(o => o.Filters.AddService<T>(order: N));
+    Type resolved from DI container, should be registered with DI container
 
 
 ### Available Interfaces
@@ -75,22 +128,7 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 - IOrderedFilter
 
 
-### Filter interface implementation usage
-- __Using ServiceFilter__
-  [ServiceFilter(type: typeof(T), Order = N)]
-  Type resolved from DI container, should be registered with DI container
-- __Using TypeFilter__
-  [TypeFilter(type: typeof(T), Order = N)]
-  Type resolved?
-- __Inherit Attribute class__ 
-  Inherit attribute class in the implementation type and use it as an attribute
-  Type resolved?
-- __Pass as an option registering controllers with DI container__
-  service.AddControllers(o => o.Filters.Add<T>(order: N));
-  Type resolved?
-
-
-### ActionFilterAttribute
+#### ActionFilterAttribute
 - Deriving from this attribute exposes:
 - 2 sync methods and 1 async method to hook into action filter: OnActionExecuting, OnActionExecuted, OnActionExecutionAsync
 - 2 sync methods and 1 async method to hook into result filter: OnResultExecuted, OnResultExecuting, OnResultExecutionAsync
@@ -98,13 +136,18 @@ It provides hooks to inspect/modify/short-circuit the filter pipeline.
 - The implementing class can be used as an attribute.
 
 
-### Resource Filter
-- Wraps most of the filter pipeline.
-
-
-### Exception Filter
-- Catch exceptions in controllers or razor page creation, action methods, model binding, action filters.
-  Does not catch exceptions in resource filter, result filter, result execution
+#### Exception Filter
+- Catches exceptions in controllers or razor page creation, action methods, model binding, action filters.
+  Does not catch exceptions in resource filter, result filter, result execution.
 - Not as flexible as global error handling middleware. Use only when action method response would be different
-  e.g., view -> HTML, api -> json
+  e.g., view action method -> HTML, api action method -> json
 - Set exception handled property to true or write response to stop exception propagation.
+
+
+#### Result Filter
+- __IResultFilterAsync or IAsyncResultFilterAsync__
+  Only executed when action result is produced by action filter or action method.
+
+- __Use IAlwaysRunResultFilter or IAsyncAlwaysRunResultFilter__ 
+  Executed when action result is produced by action method or action filter or auth filter 
+  or resource filter or exception filter
