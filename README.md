@@ -27,21 +27,21 @@
 
 
 ### Use cases
-1. __Authorisation Filter(s)__:
+1. __Authorisation Filter__:
 - Define custom auth scheme
 
-2. __Resource Filter(s)__:
+2. __Resource Filter__:
 - Generic validations
 - Return cached value
 
-3. __Action Filter(s)__:
+3. __Action Filter__:
 - Data validations on the incoming data after model binding and validations
 
-4. __Exception Filter(s)__:
+4. __Exception Filter__:
 - Catching exceptions in model binding and validations, action methods, action filters, controller or razor page
   instance creation
 
-5. __Result Filter(s)__:
+5. __Result Filter__:
 - Executes result produced by action method or action filter
 
 
@@ -63,25 +63,27 @@
 2. For a given type, the order if execution is global scope -> controller scope -> action method scope
 
 3. If multiple filters of same type are defined at a scope,  
-  they run in the order defined unless overidden
+  they run in the order defined unless overidden by order argument value
 
-4. Order can be overridden by assigning an order value
+4. Order can be overridden by assigning an order argument value
   Lower integer value -> execution prioritised
   Higher integer value -> execution deprioritised
 
-5. Implement IOrderedFilter interface to add order property and a value to override order of execution
+5. Implement IOrderedFilter interface to add order property to a custom filter implementation
+  and a value to override order of execution
 
 
 ### Filter interface implementation usage
 1. __ServiceFilter attribute__
   - [ServiceFilter(type: typeof(T), Order = N)]
-  - Type resolved from DI container, should be registered with DI container
+  - Type T will be resolved from the DI container and thus should be registered with DI container
+  - Type T's dependencies will be resolved from the DI container as well.
 
 2. __TypeFilter attribute__
   - [TypeFilter(type: typeof(T), Order = N)]
-  - Can pass arguments to the type's ctor
+  - Can pass arguments to the type's ctor with this usage
   - Type instantiated by Activator Utilities
-  - Type's dependencies resolved by the DI container
+  - Type's dependencies resolved from the DI container
 
 3. __Inherit Attribute class__ 
   - Inherit attribute class in the implementation type and use it as an attribute
@@ -89,11 +91,12 @@
 
 4. __Pass as an option while registering controllers with the DI container__
   - service.AddControllers(o => o.Filters.Add<T>(order: N));
-    Type instantiated by Activator Utilities
-    Type's dependencies resolved by the DI container
+    Type T instantiated by Activator Utilities
+    Type T's dependencies resolved from the DI container
 
   - service.AddControllers(o => o.Filters.AddService<T>(order: N));
-    Type resolved from DI container, should be registered with DI container
+    Type T resolved from DI container and thus should be registered with DI container
+    Type T's dependencies resolved from the DI container
 
 
 ### Available Interfaces
